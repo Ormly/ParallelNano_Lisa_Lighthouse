@@ -1,0 +1,10 @@
+{
+  "ipc_rest_adapters":
+  [
+    {
+      "adapter_name": "computer_nodes",
+      "ipc_queue": "/compute_node_beacon",
+      "rest_route": "/compute_node_beacon"
+    }
+  ]
+}
