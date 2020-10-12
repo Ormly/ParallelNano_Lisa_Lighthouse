@@ -1,7 +1,6 @@
 from typing import Dict, Any, List, Optional
 import json
 import pickle
-import logging
 import threading
 
 from flask import Flask
@@ -23,8 +22,9 @@ class RESTAPITarget(Target):
     """
     Information target to be used as a REST API endpoint
     """
-    def __init__(self, name: str):
+    def __init__(self, name: str, group_by_attr: Optional[str] = None):
         self.name = name
+        self.group_by_attr = group_by_attr
         self.current_state: Dict[str, Dict[Any, Any]] = {}
 
     def __call__(self, *args, **kwargs):
@@ -34,7 +34,15 @@ class RESTAPITarget(Target):
         return self.current_state
 
     def feed(self, data: Dict[Any, Any]):
-        self.current_state[data["ip_address"]] = data
+        """
+
+        :param data:
+        :return:
+        """
+        if self.group_by_attr:
+            self.current_state[data[self.group_by_attr]] = data
+        else:
+            self.current_state = data
 
 
 class IPCQueueSource(Source):
@@ -66,7 +74,7 @@ class Lighthouse(threading.Thread):
     def _init_adapters(self, config: List[Dict[Any, Any]]):
         for adapter in config:
             # create target and an API endpoint for it
-            target = RESTAPITarget(name=adapter["rest_route"])
+            target = RESTAPITarget(name=adapter["rest_route"], group_by_attr=adapter.get("group_by_attrib"))
             self._create_route(target)
 
             source = IPCQueueSource(name=adapter["ipc_queue"])

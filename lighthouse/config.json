@@ -4,7 +4,8 @@
     {
       "adapter_name": "computer_nodes",
       "ipc_queue": "/compute_node_beacon",
-      "rest_route": "/compute_node_beacon"
+      "rest_route": "/compute_node_beacon",
+      "group_by_attrib": "ip_address"
     }
   ]
 }
