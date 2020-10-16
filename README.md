@@ -5,6 +5,7 @@ Maintains REST API endpoints for various monitoring tasks on the parallel comput
 ## Installation 
 ```shell script
 sudo apt install python3-pip
+sudo apt install libffi-dev
 git clone https://github.com/Ormly/ParallelNano_Lisa_Lighthouse.git
 cd ParallelNano_Lisa_Lighthouse
 python3 setup.py install --user
