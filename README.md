@@ -7,7 +7,7 @@ Maintains REST API endpoints for various monitoring tasks on the parallel comput
 sudo apt install python3-pip
 git clone https://github.com/Ormly/ParallelNano_Lisa_Lighthouse.git
 cd ParallelNano_Lisa_Lighthouse
-python3 setup install --user
+python3 setup.py install --user
 ``` 
 
 ## Usage
