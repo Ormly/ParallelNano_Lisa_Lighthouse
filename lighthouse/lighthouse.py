@@ -1,7 +1,8 @@
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Union
 import json
 import pickle
 import threading
+import time
 
 from flask import Flask
 from ipcqueue.posixmq import queue, Queue
@@ -25,13 +26,36 @@ class RESTAPITarget(Target):
     def __init__(self, name: str, group_by_attr: Optional[str] = None):
         self.name = name
         self.group_by_attr = group_by_attr
-        self.current_state: Dict[str, Dict[Any, Any]] = {}
+        self.persistence: Dict[Any, Any] = {}
+        self.response: Dict[str, Any] = {self.name: None}
+        self.aging_time_sec = 3
 
     def __call__(self, *args, **kwargs):
         return self.get_data()
 
     def get_data(self) -> Dict[Any, Any]:
-        return self.current_state
+        """
+        copy the data that hasn't aged from storage to response
+        """
+        self._prepare_new_response()
+        return self.response
+
+    def _prepare_new_response(self):
+        # clear response with each request
+        self.response.clear()
+        now = time.time()
+        if self.group_by_attr:
+            # if grouped then request contains a list of objects
+            self.response[self.name] = []
+            
+            # only copy data records that haven't aged
+            for group, data in self.persistence.items():
+                if now - data["timestamp"] < self.aging_time_sec:
+                    self.response[self.name].append(data)
+        else:
+            # when not grouped, response contains only a single object.
+            if now - self.persistence["timestamp"] < self.aging_time_sec:
+                self.response[self.name] = self.persistence
 
     def feed(self, data: Dict[Any, Any]):
         """
@@ -39,10 +63,11 @@ class RESTAPITarget(Target):
         :param data:
         :return:
         """
+        data["timestamp"] = time.time()
         if self.group_by_attr:
-            self.current_state[data[self.group_by_attr]] = data
+            self.persistence[data[self.group_by_attr]] = data
         else:
-            self.current_state = data
+            self.persistence = data
 
 
 class IPCQueueSource(Source):
@@ -57,8 +82,7 @@ class IPCQueueSource(Source):
         :return:
         """
         try:
-            msg = self.ipc_queue.get_nowait()
-            return pickle.loads(msg)
+            return self.ipc_queue.get_nowait()
         except queue.Empty:
             return None
 
