@@ -6,6 +6,11 @@
       "ipc_queue": "/nodes_status",
       "rest_route": "/nodes_status",
       "group_by_attrib": "ip_address"
+    },
+    {
+      "adapter_name": "sensor_status",
+      "ipc_queue": "/sensor_status",
+      "rest_route": "/sensor_status"
     }
   ]
 }
