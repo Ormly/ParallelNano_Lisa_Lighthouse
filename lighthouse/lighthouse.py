@@ -1,8 +1,9 @@
 from typing import Dict, Any, List, Optional, Union
 import json
-import pickle
 import threading
 import time
+import os
+import logging
 
 from flask import Flask
 from ipcqueue.posixmq import queue, Queue
@@ -10,6 +11,12 @@ from ipcqueue.posixmq import queue, Queue
 from lighthouse.adapter import Target, Source, Adapter
 
 app = Flask(__name__)
+logging.basicConfig(
+    filename=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'lighthouse.log'),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s ',
+    level=logging.DEBUG
+)
+_logger = logging.getLogger("Lighthouse")
 
 
 class ConfigFileInvalidError(Exception):
@@ -24,6 +31,7 @@ class RESTAPITarget(Target):
     Information target to be used as a REST API endpoint
     """
     def __init__(self, name: str, group_by_attr: Optional[str] = None):
+        _logger.debug(msg=f"Creating new RESTAPITarget with name:{name}, group_by_attr:{group_by_attr}")
         self.name = name
         self.group_by_attr = group_by_attr
         self.persistence: Dict[Any, Any] = {}
@@ -124,6 +132,7 @@ class LighthouseFactory:
         with open(filepath, 'r') as f:
             config = json.load(f)
             self._validate_config_file(config)
+            _logger.setLevel(config["log_level"])
             return Lighthouse(config["ipc_rest_adapters"])
 
     @staticmethod
@@ -137,6 +146,10 @@ class LighthouseFactory:
             raise ConfigFileInvalidError("Config file is not a valid dictionary")
         if "ipc_rest_adapters" not in config.keys():
             raise ConfigFileInvalidError("if_ip missing in config file")
+        if "log_level" not in config.keys():
+            raise ConfigFileInvalidError("log_level is missing in config file")
+        if config["log_level"] not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
+            raise ConfigFileInvalidError("unknown log level in config file")
 
         adapters = config["ipc_rest_adapters"]
 

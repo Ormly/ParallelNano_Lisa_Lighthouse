@@ -12,5 +12,6 @@
       "ipc_queue": "/sensor_status",
       "rest_route": "/sensor_status"
     }
-  ]
+  ],
+  "log_level": "DEBUG"
 }
