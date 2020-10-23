@@ -22,6 +22,7 @@ setuptools.setup(
     install_requires=[
         "gunicorn",
         "ipcqueue",
-        "flask"
+        "flask",
+        "readerwriterlock"
     ]
 )

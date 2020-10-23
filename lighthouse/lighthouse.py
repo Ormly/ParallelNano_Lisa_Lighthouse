@@ -7,6 +7,7 @@ import logging
 
 from flask import Flask
 from ipcqueue.posixmq import queue, Queue
+from readerwriterlock.rwlock import RWLockRead
 
 from lighthouse.adapter import Target, Source, Adapter
 
@@ -36,7 +37,8 @@ class RESTAPITarget(Target):
         self.group_by_attr = group_by_attr
         self.persistence: Dict[Any, Any] = {}
         self.response: Dict[str, Any] = {self.name: None}
-        self.aging_time_sec = 3
+        self.aging_time_sec = 10
+        self.rw_lock = RWLockRead()
 
     def __call__(self, *args, **kwargs):
         return self.get_data()
@@ -45,25 +47,26 @@ class RESTAPITarget(Target):
         """
         copy the data that hasn't aged from storage to response
         """
-        self._prepare_new_response()
-        return self.response
+        # allow multiple reads from self.persistence
+        with self.rw_lock.gen_rlock():
+            return self._prepare_new_response()
 
     def _prepare_new_response(self):
-        # clear response with each request
-        self.response.clear()
+        response = {}
         now = time.time()
         if self.group_by_attr:
             # if grouped then request contains a list of objects
-            self.response[self.name] = []
+            response[self.name] = []
             
             # only copy data records that haven't aged
             for group, data in self.persistence.items():
                 if now - data["timestamp"] < self.aging_time_sec:
-                    self.response[self.name].append(data)
+                    response[self.name].append(data)
         else:
             # when not grouped, response contains only a single object.
             if now - self.persistence["timestamp"] < self.aging_time_sec:
-                self.response[self.name] = self.persistence
+                response[self.name] = self.persistence
+        return response
 
     def feed(self, data: Dict[Any, Any]):
         """
@@ -71,11 +74,13 @@ class RESTAPITarget(Target):
         :param data:
         :return:
         """
-        data["timestamp"] = time.time()
-        if self.group_by_attr:
-            self.persistence[data[self.group_by_attr]] = data
-        else:
-            self.persistence = data
+        # sync writing to self.persistence
+        with self.rw_lock.gen_wlock():
+            data["timestamp"] = time.time()
+            if self.group_by_attr:
+                self.persistence[data[self.group_by_attr]] = data
+            else:
+                self.persistence = data
 
 
 class IPCQueueSource(Source):
@@ -106,7 +111,7 @@ class Lighthouse(threading.Thread):
     def _init_adapters(self, config: List[Dict[Any, Any]]):
         for adapter in config:
             # create target and an API endpoint for it
-            target = RESTAPITarget(name=adapter["rest_route"], group_by_attr=adapter.get("group_by_attrib"))
+            target = RESTAPITarget(name=adapter["rest_route"], group_by_attr=adapter.get("group_by_attrib", None))
             self._create_route(target)
 
             source = IPCQueueSource(name=adapter["ipc_queue"])
