@@ -49,6 +49,7 @@ class RESTAPITarget(Target):
         """
         # allow multiple reads from self.persistence
         with self.rw_lock.gen_rlock():
+            _logger.debug(f"Generating new response for API request {self.name}")
             return self._prepare_new_response()
 
     def _prepare_new_response(self):
@@ -88,6 +89,7 @@ class IPCQueueSource(Source):
     Uses an IPC queue as an information source
     """
     def __init__(self, name: str):
+        _logger.debug(f"Creating a new IPCQueueSource for POSIX queue with name {name}")
         self.ipc_queue = Queue(name)
 
     def get_message(self) -> Optional[Dict[Any, Any]]:
@@ -119,13 +121,16 @@ class Lighthouse(threading.Thread):
 
     @staticmethod
     def _create_route(endpoint: RESTAPITarget):
+        _logger.debug(f"Adding new URL rule. name:{endpoint.name}")
         app.add_url_rule(endpoint.name, endpoint.name[1:], endpoint)
 
     def run(self):
         self.is_running = True
+        _logger.debug("Starting Lighthouse main loop")
         while self.is_running and self.parent_thread.is_alive():
             for adapter in self._adapters:
                 adapter.update()
+        _logger.debug("Lighthouse main loop exiting")
 
     def stop(self):
         self.is_running = False
