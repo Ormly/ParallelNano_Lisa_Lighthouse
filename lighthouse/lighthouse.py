@@ -4,6 +4,7 @@ import threading
 import time
 import os
 import logging
+import pathlib
 
 from flask import Flask
 from ipcqueue.posixmq import queue, Queue
@@ -176,5 +177,5 @@ class LighthouseFactory:
 
 
 factory = LighthouseFactory()
-lh = factory.create_from_config_file("lighthouse/config.json")
+lh = factory.create_from_config_file(str(pathlib.Path(__file__).parent) + "/config.json")
 lh.start()
