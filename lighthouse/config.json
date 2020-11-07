@@ -18,7 +18,7 @@
     {
       "action_name": "power_on",
       "rest_route": "/power_on",
-      "script_path": "/some/path/power_on.py",
+      "script_path": "/home/chen/import_module_test/power_on.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
     }
   ],

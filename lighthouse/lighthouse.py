@@ -187,7 +187,8 @@ class RESTAction:
             else:
                 raise ValueError(f"Unexpected argument provided: {k} with value: {v}")
         # run module.main() with args
-        module.main(*args)
+        module.main(*arguments)
+        return {"status": "OK"}, 200
 
     def _register_exception_handlers(self):
         app.register_error_handler(ModuleNotFoundError, self._handle_module_not_found_error)
@@ -247,25 +248,40 @@ class LighthouseFactory:
         """
         if not isinstance(config, dict):
             raise ConfigFileInvalidError("Config file is not a valid dictionary")
-        if "ipc_rest_adapters" not in config.keys():
-            raise ConfigFileInvalidError("if_ip missing in config file")
         if "log_level" not in config.keys():
             raise ConfigFileInvalidError("log_level is missing in config file")
         if config["log_level"] not in ["DEBUG", "INFO", "WARNING", "ERROR"]:
             raise ConfigFileInvalidError("unknown log level in config file")
 
-        adapters = config["ipc_rest_adapters"]
+        if "ipc_rest_adapters" in config.keys():
+            adapters = config["ipc_rest_adapters"]
+            if not isinstance(adapters, list):
+                raise ConfigFileInvalidError("ipc_rest_adapters not a list")
 
-        if not isinstance(adapters, list):
-            raise ConfigFileInvalidError("ipc_rest_adapters not a list")
+            for adapter in adapters:
+                if "adapter_name" not in adapter.keys():
+                    raise ConfigFileInvalidError("adapter_name missing in adapter")
+                if "ipc_queue" not in adapter.keys():
+                    raise ConfigFileInvalidError(f"ipc_queue missing in adapter: {adapter['adapter_name']}")
+                if "rest_route" not in adapter.keys():
+                    raise ConfigFileInvalidError(f"rest_route missing in adapter: {adapter['adapter_name']}")
 
-        for adapter in adapters:
-            if "adapter_name" not in adapter.keys():
-                raise ConfigFileInvalidError("adapter_name missing in adapter")
-            if "ipc_queue" not in adapter.keys():
-                raise ConfigFileInvalidError(f"ipc_queue missing in adapter: {adapter['adapter_name']}")
-            if "rest_route" not in adapter.keys():
-                raise ConfigFileInvalidError(f"rest_route missing in adapter: {adapter['adapter_name']}")
+        if "rest_actions" in config.keys():
+            actions = config["rest_actions"]
+
+            for action in actions:
+                if "action_name" not in action.keys():
+                    raise ConfigFileInvalidError("action name missing in action")
+                if "rest_route" not in action.keys():
+                    raise ConfigFileInvalidError("rest_route missing in action")
+                if "script_path" not in action.keys():
+                    raise ConfigFileInvalidError("script_path missing in action")
+                if "argument_list" not in action.keys():
+                    raise ConfigFileInvalidError("argument_list missing in actino")
+                if not isinstance(action["argument_list"], list):
+                    raise ConfigFileInvalidError(
+                        f"argument_list expected to be list, instead: {type(action['argument_list'])}"
+                    )
 
 
 factory = LighthouseFactory()
