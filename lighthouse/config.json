@@ -13,5 +13,14 @@
       "rest_route": "/sensor_status"
     }
   ],
+  "rest_actions":
+  [
+    {
+      "action_name": "power_on",
+      "rest_route": "/power_on",
+      "script_path": "/some/path/power_on.py",
+      "argument_list": [{"name": "node_num", "type": "int"}]
+    }
+  ],
   "log_level": "DEBUG"
 }

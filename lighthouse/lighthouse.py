@@ -5,6 +5,8 @@ import time
 import os
 import logging
 import pathlib
+import sys
+import importlib
 
 from flask import Flask
 from ipcqueue.posixmq import queue, Queue
@@ -104,9 +106,10 @@ class IPCQueueSource(Source):
 
 
 class Lighthouse(threading.Thread):
-    def __init__(self, config: List[Dict[Any, Any]]):
+    def __init__(self, config: Dict[Any, Any]):
         self._adapters: List[Adapter] = []
-        self._init_adapters(config)
+        self._init_adapters(config.get("ipc_rest_adapters", []))
+        self._init_actions(config.get("rest_actions", []))
         self.is_running = False
         self.parent_thread = threading.current_thread()
         super().__init__()
@@ -119,6 +122,18 @@ class Lighthouse(threading.Thread):
 
             source = IPCQueueSource(name=adapter["ipc_queue"])
             self._adapters.append(Adapter(name=adapter["adapter_name"], source=source, target=target))
+
+    @staticmethod
+    def _init_actions(config: List[Dict[Any, Any]]):
+        for action in config:
+            rest_action = RESTAction(
+                name=action["action_name"],
+                route=action["rest_route"],
+                script_path=action["script_path"],
+                argument_list=action["argument_list"]
+            )
+            rest_action.register()  # make this rest action operational
+            # self._create_action_route(rest_action)
 
     @staticmethod
     def _create_route(endpoint: RESTAPITarget):
@@ -137,14 +152,91 @@ class Lighthouse(threading.Thread):
         self.is_running = False
 
 
-class LighthouseFactory:
+class RESTAction:
+    """
+    Represents a REST API call that performes some action by calling a python script stored somewhere
+    with the given list of parameters. This object is responsible for registering the rest endpoint
+    and invoking the actual action via the __call__ method.
+    """
+    def __init__(self, name: str, route: str, script_path: str, argument_list: List[Dict]):
+        self.name = name
+        self.route = route
+        self.script_path = script_path
+        self.argument_list = argument_list
+        self._append_arguments_to_url()
+        self._register_exception_handlers()
 
+    def __call__(self, *args, **kwargs):
+        """
+        Called by Flask. Does what this action is expected to do i.e.
+        invoke the required script, with the given argument, and provide the appropriate response
+        """
+        # try:
+        # get directory path of script, add to sys.path
+        script_home = os.path.dirname(self.script_path)
+        sys.path.insert(0, script_home)
+
+        # import module
+        module_name = os.path.basename(self.script_path[:-3])  # remove .py suffix
+        module = importlib.import_module(module_name)
+
+        arguments = []
+        for k, v in kwargs.items():
+            if k in [arg["name"] for arg in self.argument_list]:
+                arguments.append(v)
+            else:
+                raise ValueError(f"Unexpected argument provided: {k} with value: {v}")
+        # run module.main() with args
+        module.main(*args)
+
+    def _register_exception_handlers(self):
+        app.register_error_handler(ModuleNotFoundError, self._handle_module_not_found_error)
+        app.register_error_handler(AttributeError, self._handle_module_does_comply_with_expected_format)
+        app.register_error_handler(ValueError, self._handle_unexpected_argument_provided)
+
+    @staticmethod
+    def _handle_module_not_found_error(e):
+        return {
+            "status": "application error",
+            "description": "The module specified by this call was not found in the provided path"
+        }, 500
+
+    @staticmethod
+    def _handle_module_does_comply_with_expected_format(e):
+        return {
+            "status": "application error",
+            "description": "The module specified by this call does not contain the expected function"
+        }, 500
+
+    @staticmethod
+    def _handle_unexpected_argument_provided(self):
+        return {
+            "status": "application error",
+            "description": "An unexpected argument was provided to this call"
+        }, 500
+
+    def _append_arguments_to_url(self):
+        for arg in self.argument_list:
+            self.route += "/<" + arg["type"] + ":" + arg["name"] + ">"
+
+    def register(self):
+        """
+        makes this REST action operational by registering its URL + arguments with Flask, as well as setting
+        __call__ as the called method on this endpoint
+        """
+        self._register_endpoint()
+
+    def _register_endpoint(self):
+        app.add_url_rule(rule=self.route, endpoint=self.name, view_func=self)
+
+
+class LighthouseFactory:
     def create_from_config_file(self, filepath: str) -> Lighthouse:
         with open(filepath, 'r') as f:
             config = json.load(f)
             self._validate_config_file(config)
             _logger.setLevel(config["log_level"])
-            return Lighthouse(config["ipc_rest_adapters"])
+            return Lighthouse(config)
 
     @staticmethod
     def _validate_config_file(config: Dict):
