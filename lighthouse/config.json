@@ -20,6 +20,18 @@
       "rest_route": "/power_on",
       "script_path": "/home/chen/import_module_test/power_on.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
+    },
+    {
+      "action_name": "reset",
+      "rest_route": "/reset",
+      "script_path": "/home/chen/import_module_test/reset.py",
+      "argument_list": [{"name": "node_num", "type": "int"}]
+    },
+    {
+      "action_name": "new_user",
+      "rest_route": "/new_user",
+      "script_path": "/home/chen/import_module_test/new_user.py",
+      "argument_list": [{"name": "username", "type": "string"}, {"name": "password", "type": "string"}]
     }
   ],
   "log_level": "DEBUG"
