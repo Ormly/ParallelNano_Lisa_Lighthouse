@@ -58,6 +58,35 @@ Lighthouse can be extended to support additional monitoring sources by following
 1. Add an adapter to the Lighthouse config file, with the appropriate ipc queue name, and the desired REST endpoint URL.
 1. Restart Lighthouse
 
+## Adding a new REST Action
+By adding a new REST Action, Lighthouse can map a REST endpoint to a python script, sending over any arguments passed to the API.
+
+The basic structure of such Python script is as follows
+```python
+import sys
+
+
+def power_off_node(number):
+	"""
+	The actual functionality of the script
+	"""
+	actually_power_off_node(number)
+
+
+def main(node_number):
+	"""
+	Entry point of the script (from external location)
+	"""
+	power_off_node(node_number)
+
+
+if __name__ == "__main__":
+	"""
+	When running the script manually (takes arguments from stdin)
+	"""
+	main(sys.argv[1])
+``` 
+
 ## API Specification
 Get nodes information
 URL: ```/compute_node_beacon```
