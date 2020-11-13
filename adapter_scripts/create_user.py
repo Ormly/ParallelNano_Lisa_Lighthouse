@@ -30,8 +30,9 @@ def _exec_bash(cmd, *args):
     result = False
     error = None
 
+    # ssh bobby sudo SCRIPT_PATH ARGS
     try:
-        child = subprocess.Popen([cmd, *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        child = subprocess.Popen(["ssh", "sudo", cmd, *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         _, error_stream = child.communicate()
         if not child.returncode:
             result = True
