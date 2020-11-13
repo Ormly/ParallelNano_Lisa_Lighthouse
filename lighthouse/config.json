@@ -28,15 +28,21 @@
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
-      "action_name": "new_user",
-      "rest_route": "/new_user",
-      "script_path": "/nfs/scripts/automation/lisa_scripts/new_user.py",
-      "argument_list": [{"name": "username", "type": "string"}, {"name": "password", "type": "string"}]
+      "action_name": "create_user",
+      "rest_route": "/create_user",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/create_user.py",
+      "argument_list": [{"name": "username", "type": "string"}, {"name": "password", "type": "string"}, {"name": "user_type", "type": "string"}]
     },
     {
-      "action_name": "users",
-      "rest_route": "/users",
-      "script_path": "/nfs/scripts/automation/lisa_scripts/users.py",
+      "action_name": "remove_user",
+      "rest_route": "/remove_user",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/remove_user.py",
+      "argument_list": [{"name": "username", "type": "string"}]
+    },
+    {
+      "action_name": "user_list",
+      "rest_route": "/user_list",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/user_list.py",
       "argument_list": []
     }
   ],
