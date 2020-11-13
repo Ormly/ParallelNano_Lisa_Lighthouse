@@ -187,8 +187,12 @@ class RESTAction:
             else:
                 raise ValueError(f"Unexpected argument provided: {k} with value: {v}")
         # run module.main() with args
-        module.main(*arguments)
-        return {"status": "OK"}, 200
+        response = module.main(*arguments)
+        return {
+                    "status": "OK",
+                    "response": response
+
+               }, 200
 
     def _register_exception_handlers(self):
         app.register_error_handler(ModuleNotFoundError, self._handle_module_not_found_error)

@@ -73,12 +73,22 @@ def power_off_node(number):
 	actually_power_off_node(number)
 
 
-def main(node_number):
+def main(node_number) -> dict:
 	"""
 	Entry point of the script (from external location)
 	"""
 	power_off_node(node_number)
 
+    response = {
+        "action": "reset",
+        "target": node_number
+    }
+   
+    if successful:
+        response["result"] = "success"
+    else:
+        response["result"] = "failed"
+    return response
 
 if __name__ == "__main__":
 	"""

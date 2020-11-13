@@ -18,20 +18,26 @@
     {
       "action_name": "power_on",
       "rest_route": "/power_on",
-      "script_path": "/absolute/path/to/external_modules/power_on.py",
+      "script_path": "/nfs/scripts/automation/lisa_scripts/power_on.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
       "action_name": "reset",
       "rest_route": "/reset",
-      "script_path": "/absolute/path/to/external_modules/reset.py",
+      "script_path": "/nfs/scripts/automation/lisa_scripts/reset.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
       "action_name": "new_user",
       "rest_route": "/new_user",
-      "script_path": "/absolute/path/to/external_modules/new_user.py",
+      "script_path": "/nfs/scripts/automation/lisa_scripts/new_user.py",
       "argument_list": [{"name": "username", "type": "string"}, {"name": "password", "type": "string"}]
+    },
+    {
+      "action_name": "users",
+      "rest_route": "/users",
+      "script_path": "/nfs/scripts/automation/lisa_scripts/users.py",
+      "argument_list": []
     }
   ],
   "log_level": "DEBUG"
