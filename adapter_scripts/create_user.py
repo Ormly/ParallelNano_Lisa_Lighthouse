@@ -32,7 +32,13 @@ def _exec_bash(cmd, *args):
 
     # ssh bobby sudo SCRIPT_PATH ARGS
     try:
-        child = subprocess.Popen(["ssh", "sudo", cmd, *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # run ssh with pjamaadmin to execute the command on bobby using sudo
+        child = subprocess.Popen(
+            ["sudo", "-u", "pjamaadmin", "ssh", "bobby", "sudo", cmd, *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
         _, error_stream = child.communicate()
         if not child.returncode:
             result = True

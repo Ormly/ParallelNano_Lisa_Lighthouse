@@ -24,7 +24,11 @@ def _exec_bash(cmd, *args):
     error = None
 
     try:
-        child = subprocess.Popen([cmd, *args], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        child = subprocess.Popen(
+            ["sudo", "-u", "pjamaadmin", "ssh", "bobby", "sudo", cmd, *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
         _, error_stream = child.communicate()
         if not child.returncode:
             result = True
