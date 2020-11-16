@@ -42,9 +42,16 @@
     {
       "action_name": "user_list",
       "rest_route": "/user_list",
-      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/user_list.py",
+      "script_path": "/home/mario/lighthouse/adapter_scripts/user_list.py",
+      "argument_list": []
+    },
+    {
+      "action_name": "nodes",
+      "rest_route": "/nodes",
+      "script_path": "/home/mario/lighthouse/adapter_scripts/nodes.py",
       "argument_list": []
     }
+
   ],
   "log_level": "DEBUG"
 }
