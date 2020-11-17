@@ -1,22 +1,23 @@
+#
+# TPRO 2020
+#
+"""
+Power on adapter script
+"""
 import sys
 import subprocess
 
 
 SCRIPT_PATH = "/nfs/scripts/automation/lisa_scripts/power_control.py"
 
+# python3 power_control.py reset 1 noprint
 
-def power(username, password):
+
+def power_on(node_number):
     """
     The actual functionality of the script
     """
-    return _exec_bash(SCRIPT_PATH, "-u", username, password)
-
-
-def create_admin(username, password):
-    """
-    The actual functionality of the script
-    """
-    return _exec_bash(SCRIPT_PATH, "-a", username, password)
+    return _exec_bash(SCRIPT_PATH, "power", node_number, "noprint")
 
 
 def _exec_bash(cmd, *args):
@@ -34,7 +35,7 @@ def _exec_bash(cmd, *args):
     try:
         # run ssh with pjamaadmin to execute the command on bobby using sudo
         child = subprocess.Popen(
-            ["sudo", "-u", "pjamaadmin", "ssh", "bobby", "sudo", cmd, *args],
+            ["python3", cmd, *args],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
@@ -51,16 +52,13 @@ def _exec_bash(cmd, *args):
     return result, error
 
 
-def main(username, password, user_type) -> dict:
+def main(node_number) -> dict:
     """
     Entry point of the script (from external location)
     """
-    if user_type == "user":
-        result, error = create_user(username, password)
-    else:
-        result, error = create_admin(username, password)
+    result, error = power_on(node_number=node_number)
 
-    response = {"action": "create_user", "target": username, "type": user_type}
+    response = {"action": "power_on", "target": node_number}
 
     if not result:
         response["result"] = "failed"
@@ -76,11 +74,8 @@ if __name__ == "__main__":
     """
     When running the script manually (takes arguments from stdin)
     """
-    if len(sys.argv) != 4:
-        raise ValueError("Create user is expecting exactly 3 arguments!")
+    if len(sys.argv) != 2:
+        raise ValueError("Power on is expecting exactly 1 argument!")
 
-    if sys.argv[3] not in ["admin", "user"]:
-        raise ValueError("User type is expected to be either 'user' or 'admin'!")
-
-    print(main(sys.argv[1], sys.argv[2], sys.argv[3]))
+    print(main(sys.argv[1]))
 
