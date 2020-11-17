@@ -17,7 +17,7 @@ def power_on(node_number):
     """
     The actual functionality of the script
     """
-    return _exec_bash(SCRIPT_PATH, "power", node_number, "noprint")
+    return _exec_bash(SCRIPT_PATH, "power", str(node_number), "noprint")
 
 
 def _exec_bash(cmd, *args):
