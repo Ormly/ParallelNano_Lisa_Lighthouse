@@ -28,6 +28,7 @@ def _exec_ansible(cmd, *args):
     :param args:
     :return:
     """
+    inventory = "/nfs/scripts/automation/inventory.ini"
     result = False
     error = None
 
@@ -35,7 +36,7 @@ def _exec_ansible(cmd, *args):
     try:
         # run ssh with pjamaadmin to execute the command on bobby using sudo
         child = subprocess.Popen(
-            ["sudo", "-u", "pjamaadmin", "ssh", "bobby", "ansible-playbook", cmd, *args],
+            ["sudo", "-u", "pjamaadmin", "ssh", "bobby", "ansible-playbook", cmd, "-i", inventory, *args],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
