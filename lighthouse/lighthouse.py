@@ -8,7 +8,7 @@ import pathlib
 import sys
 import importlib
 
-from flask import Flask
+from flask import Flask, make_response
 from ipcqueue.posixmq import queue, Queue
 from readerwriterlock.rwlock import RWLockRead
 
@@ -44,7 +44,9 @@ class RESTAPITarget(Target):
         self.rw_lock = RWLockRead()
 
     def __call__(self, *args, **kwargs):
-        return self.get_data()
+        response = make_response(self.get_data())
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
 
     def get_data(self) -> Dict[Any, Any]:
         """
@@ -68,8 +70,9 @@ class RESTAPITarget(Target):
                     response[self.name].append(data)
         else:
             # when not grouped, response contains only a single object.
-            if now - self.persistence["timestamp"] < self.aging_time_sec:
-                response[self.name] = self.persistence
+            if self.persistence:
+                if now - self.persistence["timestamp"] < self.aging_time_sec:
+                    response[self.name] = self.persistence
         return response
 
     def feed(self, data: Dict[Any, Any]):
@@ -187,12 +190,15 @@ class RESTAction:
             else:
                 raise ValueError(f"Unexpected argument provided: {k} with value: {v}")
         # run module.main() with args
-        response = module.main(*arguments)
-        return {
+        result = module.main(*arguments)
+        response = {
                     "status": "OK",
-                    "response": response
+                    "response": result
+        }
+        response = make_response(response)
+        response.headers["Access-Control-Allow-Origin"] = "*"
 
-               }, 200
+        return response
 
     def _register_exception_handlers(self):
         app.register_error_handler(ModuleNotFoundError, self._handle_module_not_found_error)

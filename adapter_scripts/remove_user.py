@@ -46,7 +46,7 @@ def main(username) -> dict:
     Entry point of the script (from external location)
     """
 
-    response = {"action": "create_user", "target": username}
+    response = {"action": "remove_user", "target": username}
 
     result, error = remove_user(username)
 
