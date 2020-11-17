@@ -52,7 +52,7 @@ def _exec_bash(cmd, *args):
     return result, error
 
 
-def main(node_number) -> dict:
+def main(node_number: int) -> dict:
     """
     Entry point of the script (from external location)
     """
