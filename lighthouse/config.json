@@ -18,13 +18,13 @@
     {
       "action_name": "power_on",
       "rest_route": "/power_on",
-      "script_path": "/nfs/scripts/automation/lisa_scripts/power_on.py",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/power_on.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
       "action_name": "reset",
       "rest_route": "/reset",
-      "script_path": "/nfs/scripts/automation/lisa_scripts/reset.py",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/reset.py",
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
