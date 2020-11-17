@@ -39,7 +39,8 @@ class RESTAPITarget(Target):
         self.name = name
         self.group_by_attr = group_by_attr
         self.persistence: Dict[Any, Any] = {}
-        self.response: Dict[str, Any] = {self.name: None}
+        self.container_name = self.name[1:]
+        self.response: Dict[str, Any] = {self.container_name: None}
         self.aging_time_sec = 10
         self.rw_lock = RWLockRead()
 
@@ -62,17 +63,17 @@ class RESTAPITarget(Target):
         now = time.time()
         if self.group_by_attr:
             # if grouped then request contains a list of objects
-            response[self.name] = []
+            response[self.container_name] = []
             
             # only copy data records that haven't aged
             for group, data in self.persistence.items():
                 if now - data["timestamp"] < self.aging_time_sec:
-                    response[self.name].append(data)
+                    response[self.container_name].append(data)
         else:
             # when not grouped, response contains only a single object.
             if self.persistence:
                 if now - self.persistence["timestamp"] < self.aging_time_sec:
-                    response[self.name] = self.persistence
+                    response[self.container_name] = self.persistence
         return response
 
     def feed(self, data: Dict[Any, Any]):
