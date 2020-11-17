@@ -34,6 +34,7 @@ def _exec_bash(cmd, *args):
     # ssh bobby sudo SCRIPT_PATH ARGS
     try:
         # run ssh with pjamaadmin to execute the command on bobby using sudo
+        print(f"executing: {['python', cmd, *args]}")
         child = subprocess.Popen(
             ["python3", cmd, *args],
             stdout=subprocess.PIPE,

@@ -192,7 +192,7 @@ class RESTAction:
                 raise ValueError(f"Unexpected argument provided: {k} with value: {v}")
         # run module.main() with args
 
-        _logger.debug(msg=f"Invoking main method of module in path: {script_home}, with arguments: {arguments}")
+        _logger.debug(msg=f"Invoking main method of module in path: {script_home}/{module_name}, with arguments: {arguments}")
         result = module.main(*arguments)
         _logger.debug(msg=f"Result: {result}")
 
