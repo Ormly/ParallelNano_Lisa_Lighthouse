@@ -22,6 +22,12 @@
       "argument_list": [{"name": "node_num", "type": "int"}]
     },
     {
+      "action_name": "shutdown",
+      "rest_route": "/shutdown",
+      "script_path": "/nfs/scripts/lighthouse/adapter_scripts/shutdown.py",
+      "argument_list": [{"name": "node_num", "type": "int"}]
+    },
+    {
       "action_name": "reset",
       "rest_route": "/reset",
       "script_path": "/nfs/scripts/lighthouse/adapter_scripts/reset.py",
